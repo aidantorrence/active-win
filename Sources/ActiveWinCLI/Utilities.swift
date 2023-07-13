@@ -3,7 +3,14 @@ import AppKit
 
 @discardableResult
 func runAppleScript(source: String) -> String? {
-	NSAppleScript(source: source)?.executeAndReturnError(nil).stringValue
+    var error: NSDictionary?
+    if let output: NSAppleEventDescriptor = NSAppleScript(source: source)?.executeAndReturnError(&error) {
+        return output.stringValue
+    } else if let error = error {
+        SentrySDK.capture(error: NSError(domain: "com.yourdomain.yourapp", code: 9999, userInfo: error as? [String: Any]))
+        print("Error running AppleScript: \(error)")
+    }
+    return nil
 }
 
 

@@ -1,4 +1,5 @@
 import AppKit
+import Sentry
 
 func getActiveBrowserTabURLAppleScriptCommand(_ appId: String) -> String? {
 	switch appId {
@@ -81,6 +82,17 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	}
 
 	return output
+}
+
+SentrySDK.start { options in
+		options.dsn = "https://e92ea059679241b8806e4d32bc27d9a3@o1411142.ingest.sentry.io/4505519808053248"
+		options.debug = true // Enabled debug when first installing is always helpful
+}
+
+do {
+    try aMethodThatMightFail()
+} catch {
+    SentrySDK.capture(error: error)
 }
 
 let disableScreenRecordingPermission = CommandLine.arguments.contains("--no-screen-recording-permission")
