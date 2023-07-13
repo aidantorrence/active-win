@@ -12,13 +12,13 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/getsentry/sentry-cocoa.git", 
-            from: "7.1.3"
+            from: "8.8.0"
         )
     ],
     targets: [
         .executableTarget(
             name: "ActiveWinCLI",
-            dependencies: ["Sentry"]
+            dependencies: [.product(name: "Sentry", package: "sentry-cocoa")]
         )
     ]
 )

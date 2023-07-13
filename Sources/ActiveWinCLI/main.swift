@@ -85,15 +85,22 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 }
 
 SentrySDK.start { options in
-		options.dsn = "https://e92ea059679241b8806e4d32bc27d9a3@o1411142.ingest.sentry.io/4505519808053248"
+		options.dsn = "https://b681c9619d704f729239969759700ae9@o1411142.ingest.sentry.io/4505524188807168"
 		options.debug = true // Enabled debug when first installing is always helpful
 }
 
 do {
-    try aMethodThatMightFail()
+    // This function will throw an error.
+    func functionThatThrows() throws {
+        throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "This is an error"])
+    }
+
+    // Call the function.
+    try functionThatThrows()
 } catch {
     SentrySDK.capture(error: error)
 }
+
 
 let disableScreenRecordingPermission = CommandLine.arguments.contains("--no-screen-recording-permission")
 let enableOpenWindowsList = CommandLine.arguments.contains("--open-windows-list")
