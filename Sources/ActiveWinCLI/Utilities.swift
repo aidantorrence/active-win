@@ -1,6 +1,10 @@
 import AppKit
 import Sentry
 
+struct ScriptError: Error {
+    let message: String
+}
+
 func getActiveTabDetailsFromAllWindows() -> [(name: String, url: URL?)] {
     let script = """
     tell application "Google Chrome"
@@ -14,24 +18,37 @@ func getActiveTabDetailsFromAllWindows() -> [(name: String, url: URL?)] {
         return windowDetails
     end tell
     """
-    var error: NSDictionary?
     var windowDetailsList = [(name: String, url: URL?)]()
-    if let scriptObject = NSAppleScript(source: script) {
-        if let output = scriptObject.executeAndReturnError(&error).listValue {
-            for descriptor in output {
-                if let recordDescriptor = descriptor.at(1),
-                   let name = recordDescriptor.at(1)?.stringValue,
-                   let urlString = recordDescriptor.at(2)?.stringValue {
-                    windowDetailsList.append((name: name, url: URL(string: urlString)))
-                }
-            }
-        } else if let error = error {
-            print("error: \(String(describing: error))")
-            SentrySDK.capture(error: NSError(domain: error.domain, code: error.code, userInfo: error as? [String: Any]))
-        }
+    
+    let scriptObject = NSAppleScript(source: script)
+    var error: NSDictionary? = nil
+    let output = scriptObject?.executeAndReturnError(&error)
+    if let error = error {
+        print("Error: \(error)")
+				let scriptError = ScriptError(message: "AppleScript Error: \(error)")
+				SentrySDK.capture(error: scriptError)
+    } else if let stringValue = output?.stringValue {
+				let data = stringValue.data(using: .utf8)!
+				do {
+						let json = try JSONSerialization.jsonObject(with: data, options: []) as! [[String: Any]]
+						for window in json {
+								let name = window["windowName"] as! String
+								let url = window["windowURL"] as! String
+								windowDetailsList.append((name: name, url: URL(string: url)))
+						}
+				} catch {
+						print("Error: \(error)")
+						let scriptError = ScriptError(message: "AppleScript Error: \(error)")
+						SentrySDK.capture(error: scriptError)
+				}
+    } else {
+        print("Output descriptor did not contain a string.")
     }
+    
     return windowDetailsList
 }
+
+
 
 
 

@@ -62,15 +62,13 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	]
 
 	// Only run the AppleScript if active window is a compatible browser.
-	if
-		let bundleIdentifier = app.bundleIdentifier,
-		if bundleIdentifier == "com.google.Chrome" {
-				let windowDetails = getActiveTabDetailsFromAllWindows()
+	if let bundleIdentifier = app.bundleIdentifier, bundleIdentifier == "com.google.Chrome" {
+			let windowDetails = getActiveTabDetailsFromAllWindows()
+			if let detail = windowDetails.first(where: { $0.name == windowTitle }) {
+					output["url"] = detail.url?.absoluteString
+			}
+	}
 
-				if let detail = windowDetails.first(where: { $0.name == windowTitle }) {
-						output["url"] = detail.url?.absoluteString
-				}
-		}
 
 	return output
 }
