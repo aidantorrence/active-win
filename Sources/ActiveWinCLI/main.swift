@@ -37,6 +37,7 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	let appName = window[kCGWindowOwnerName as String] as? String ?? app.bundleIdentifier ?? "<Unknown>"
 
 	let windowName = window[kCGWindowName as String] ?? ""
+	SentrySDK.capture(message: "Window name: \(windowName)")
 
 	let windowId = window[kCGWindowNumber as String] as! Int
 
@@ -66,7 +67,7 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	// Only run the AppleScript if active window is a compatible browser.
 	if let bundleIdentifier = app.bundleIdentifier, bundleIdentifier == "com.google.Chrome" {
 		SentrySDK.capture(message: "Chrome detected")
-			let url = getActiveTabUrl(windowName) ?? ""
+			let url = getActiveTabUrl(windowName: windowName as! String) ?? ""
 			SentrySDK.capture(message: "Chrome details: \(url)")
 					output["url"] = url
 	}
@@ -80,20 +81,9 @@ SentrySDK.start { options in
 		options.debug = true // Enabled debug when first installing is always helpful
 }
 
-let disableScreenRecordingPermission = CommandLine.arguments.contains("--no-screen-recording-permission")
 let enableOpenWindowsList = CommandLine.arguments.contains("--open-windows-list")
 
-// // Show accessibility permission prompt if needed. Required to get the complete window title.
-// if !AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary) {
-// 	print("active-win requires the accessibility permission in “System Settings › Privacy & Security › Accessibility”.")
-// 	exit(1)
-// }
 
-// // Show screen recording permission prompt if needed. Required to get the complete window title.
-// if !disableScreenRecordingPermission && !hasScreenRecordingPermission() {
-// 	print("active-win requires the screen recording permission in “System Settings › Privacy & Security › Screen Recording”.")
-// 	exit(1)
-// }
 
 guard
 	let frontmostAppPID = NSWorkspace.shared.frontmostApplication?.processIdentifier,

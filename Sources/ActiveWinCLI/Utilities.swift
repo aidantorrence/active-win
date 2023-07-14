@@ -10,15 +10,15 @@ func getActiveTabUrl(windowName: String) -> String? {
 		SentrySDK.capture(message: "Input window name: \(windowName)")
     let scriptSource = """
     tell application "Google Chrome"
-        set windowIds to {}
+        set windowNames to {}
         set allWindows to every window
         repeat with aWindow in allWindows
-            set end of windowIds to id of aWindow
+            set end of windowNames to name of aWindow
             if name of aWindow is "\(windowName)" then
                 return URL of active tab of aWindow
             end if
         end repeat
-        return windowIds
+        return windowNames
     end tell
     """
 
