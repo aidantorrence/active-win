@@ -6,15 +6,15 @@ struct ScriptError: Error {
     let message: String
 }
 
-func getActiveTabUrl(windowId: Int) -> String? {
-		SentrySDK.capture(message: "Input window id: \(windowId)")
+func getActiveTabUrl(windowName: String) -> String? {
+		SentrySDK.capture(message: "Input window name: \(windowName)")
     let scriptSource = """
     tell application "Google Chrome"
         set windowIds to {}
         set allWindows to every window
         repeat with aWindow in allWindows
             set end of windowIds to id of aWindow
-            if id of aWindow is "\(windowId)" then
+            if name of aWindow is "\(windowName)" then
                 return URL of active tab of aWindow
             end if
         end repeat

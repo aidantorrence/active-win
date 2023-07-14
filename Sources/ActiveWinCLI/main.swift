@@ -36,7 +36,7 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 
 	let appName = window[kCGWindowOwnerName as String] as? String ?? app.bundleIdentifier ?? "<Unknown>"
 
-	let windowTitle = window[kCGWindowName as String] ?? ""
+	let windowName = window[kCGWindowName as String] ?? ""
 
 	let windowId = window[kCGWindowNumber as String] as! Int
 
@@ -46,7 +46,7 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 
 	var output: [String: Any] = [
 		"platform": "macos",
-		"title": windowTitle,
+		"title": windowName,
 		"id": windowId,
 		"bounds": [
 			"x": bounds.origin.x,
@@ -66,7 +66,7 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	// Only run the AppleScript if active window is a compatible browser.
 	if let bundleIdentifier = app.bundleIdentifier, bundleIdentifier == "com.google.Chrome" {
 		SentrySDK.capture(message: "Chrome detected")
-			let url = getActiveTabUrl(windowId: windowId) ?? ""
+			let url = getActiveTabUrl(windowName) ?? ""
 			SentrySDK.capture(message: "Chrome details: \(url)")
 					output["url"] = url
 	}
