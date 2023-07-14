@@ -6,20 +6,11 @@ struct ScriptError: Error {
     let message: String
 }
 
-func getActiveTabUrl(windowName: String) -> String? {
-		SentrySDK.capture(message: "Input window name: \(windowName)")
+func getActiveTabUrl() -> String? {
     let scriptSource = """
-    tell application "Google Chrome"
-        set windowNames to {}
-        set allWindows to every window
-        repeat with aWindow in allWindows
-            set end of windowNames to name of aWindow
-            if name of aWindow is "\(windowName)" then
-                return URL of active tab of aWindow
-            end if
-        end repeat
-        return windowNames
-    end tell
+		tell application "Google Chrome"
+			return URL of active tab of front window
+		end tell
     """
 
     var error: NSDictionary?
