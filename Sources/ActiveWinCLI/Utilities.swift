@@ -24,7 +24,7 @@ func getActiveTabUrl() -> String? {
         return nil
     } else {
         let result = output?.stringValue
-        SentrySDK.capture(message: "Result: \(result ?? "null")")
+        // SentrySDK.capture(message: "Result: \(result ?? "null")")
         return result
     }
 }
