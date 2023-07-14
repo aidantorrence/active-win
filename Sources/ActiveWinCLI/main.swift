@@ -36,7 +36,9 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 
 	let appName = window[kCGWindowOwnerName as String] as? String ?? app.bundleIdentifier ?? "<Unknown>"
 
-	let windowTitle = disableScreenRecordingPermission ? "" : window[kCGWindowName as String] as? String ?? ""
+	let windowTitle = window[kCGWindowName as String] ?? ""
+
+	let windowId = window[kCGWindowNumber as String] as! Int
 
 	if app.bundleIdentifier == "com.apple.dock" {
 		return nil
@@ -45,7 +47,7 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	var output: [String: Any] = [
 		"platform": "macos",
 		"title": windowTitle,
-		"id": window[kCGWindowNumber as String] as! Int, // Documented to always exist.
+		"id": windowId,
 		"bounds": [
 			"x": bounds.origin.x,
 			"y": bounds.origin.y,
@@ -64,11 +66,9 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	// Only run the AppleScript if active window is a compatible browser.
 	if let bundleIdentifier = app.bundleIdentifier, bundleIdentifier == "com.google.Chrome" {
 		SentrySDK.capture(message: "Chrome detected")
-			let windowDetails = getActiveTabDetailsFromAllWindows()
-			SentrySDK.capture(message: "Chrome details: \(windowDetails)")
-			if let detail = windowDetails.first(where: { $0.name == windowTitle }) {
-					output["url"] = detail.url?.absoluteString
-			}
+			let url = getActiveTabUrl(windowId: windowId) ?? ""
+			SentrySDK.capture(message: "Chrome details: \(url)")
+					output["url"] = url
 	}
 
 

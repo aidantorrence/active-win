@@ -1,53 +1,44 @@
 import AppKit
 import Sentry
+import Foundation
 
 struct ScriptError: Error {
     let message: String
 }
 
-func getActiveTabDetailsFromAllWindows() -> [(name: String, url: URL?)] {
-    let script = """
+func getActiveTabUrl(windowId: Int) -> String? {
+		SentrySDK.capture(message: "Input window id: \(windowId), all window ids: \(urlString ?? "null")")
+    let scriptSource = """
     tell application "Google Chrome"
-        set windowList to every window
-        set windowDetails to {}
-        repeat with aWindow in windowList
-            set windowName to name of aWindow
-            set windowURL to URL of active tab of aWindow
-            set end of windowDetails to {windowName:windowName, windowURL:windowURL}
+				set windowIds to {}
+        set allWindows to every window
+        repeat with aWindow in allWindows
+						set end of windowIds to id of aWindow
+            if id of aWindow is "\(windowId)" then
+                return URL of active tab of aWindow
+            end if
         end repeat
-        return windowDetails
+
+				return windowIds
     end tell
     """
-    var windowDetailsList = [(name: String, url: URL?)]()
+
+    var error: NSDictionary?
+    let script = NSAppleScript(source: scriptSource)
+    let output = script?.executeAndReturnError(&error)
     
-    let scriptObject = NSAppleScript(source: script)
-    var error: NSDictionary? = nil
-    let output = scriptObject?.executeAndReturnError(&error)
-		Sentry.capture(message: "Chrome details: \(output)")
     if let error = error {
         print("Error: \(error)")
-				let scriptError = ScriptError(message: "AppleScript Error: \(error)")
-				SentrySDK.capture(error: scriptError)
-    } else if let stringValue = output?.stringValue {
-				let data = stringValue.data(using: .utf8)!
-				do {
-						let json = try JSONSerialization.jsonObject(with: data, options: []) as! [[String: Any]]
-						for window in json {
-								let name = window["windowName"] as! String
-								let url = window["windowURL"] as! String
-								windowDetailsList.append((name: name, url: URL(string: url)))
-						}
-				} catch {
-						print("Error: \(error)")
-						let scriptError = ScriptError(message: "AppleScript Error: \(error)")
-						SentrySDK.capture(error: scriptError)
-				}
+        let scriptError = ScriptError(message: "AppleScript Error: \(error)")
+        SentrySDK.capture(error: scriptError)
+        return nil
     } else {
-        print("Output descriptor did not contain a string.")
+        let result = output?.stringValue
+        SentrySDK.capture(message: "Result: \(result ?? "null")")
+        return result
     }
-    
-    return windowDetailsList
 }
+
 
 
 
