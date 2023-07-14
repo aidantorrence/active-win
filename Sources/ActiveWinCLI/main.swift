@@ -1,17 +1,6 @@
 import AppKit
 import Sentry
 
-func getActiveBrowserTabURLAppleScriptCommand(_ appId: String) -> String? {
-	switch appId {
-	case "com.google.Chrome", "com.google.Chrome.beta", "com.google.Chrome.dev", "com.google.Chrome.canary", "com.brave.Browser", "com.brave.Browser.beta", "com.brave.Browser.nightly", "com.microsoft.edgemac", "com.microsoft.edgemac.Beta", "com.microsoft.edgemac.Dev", "com.microsoft.edgemac.Canary", "com.mighty.app", "com.ghostbrowser.gb1", "com.bookry.wavebox", "com.pushplaylabs.sidekick", "com.operasoftware.Opera",  "com.operasoftware.OperaNext", "com.operasoftware.OperaDeveloper", "com.vivaldi.Vivaldi", "company.thebrowser.Browser":
-		return "tell app id \"\(appId)\" to get the URL of active tab of front window"
-	case "com.apple.Safari", "com.apple.SafariTechnologyPreview":
-		return "tell app id \"\(appId)\" to get URL of front document"
-	default:
-		return nil
-	}
-}
-
 func exitWithoutResult() -> Never {
 	print("null")
 	exit(0)
@@ -75,11 +64,13 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 	// Only run the AppleScript if active window is a compatible browser.
 	if
 		let bundleIdentifier = app.bundleIdentifier,
-		let script = getActiveBrowserTabURLAppleScriptCommand(bundleIdentifier),
-		let url = runAppleScript(source: script)
-	{
-		output["url"] = url
-	}
+		if bundleIdentifier == "com.google.Chrome" {
+				let windowDetails = getActiveTabDetailsFromAllWindows()
+
+				if let detail = windowDetails.first(where: { $0.name == windowTitle }) {
+						output["url"] = detail.url?.absoluteString
+				}
+		}
 
 	return output
 }
@@ -88,19 +79,6 @@ SentrySDK.start { options in
 		options.dsn = "https://b681c9619d704f729239969759700ae9@o1411142.ingest.sentry.io/4505524188807168"
 		options.debug = true // Enabled debug when first installing is always helpful
 }
-
-do {
-    // This function will throw an error.
-    func functionThatThrows() throws {
-        throw NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "This is an error"])
-    }
-
-    // Call the function.
-    try functionThatThrows()
-} catch {
-    SentrySDK.capture(error: error)
-}
-
 
 let disableScreenRecordingPermission = CommandLine.arguments.contains("--no-screen-recording-permission")
 let enableOpenWindowsList = CommandLine.arguments.contains("--open-windows-list")
