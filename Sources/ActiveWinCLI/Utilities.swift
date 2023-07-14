@@ -8,10 +8,10 @@ struct ScriptError: Error {
 
 func getActiveTabUrl() -> String? {
     let scriptSource = """
-		tell application "Google Chrome"
-			return URL of active tab of front window
-		end tell
-    """
+        tell application "Google Chrome"
+            return URL of active tab of front window
+        end tell
+        """
 
     var error: NSDictionary?
     let script = NSAppleScript(source: scriptSource)
