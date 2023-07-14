@@ -23,6 +23,7 @@ func getActiveTabDetailsFromAllWindows() -> [(name: String, url: URL?)] {
     let scriptObject = NSAppleScript(source: script)
     var error: NSDictionary? = nil
     let output = scriptObject?.executeAndReturnError(&error)
+		Sentry.capture(message: "Chrome details: \(output)")
     if let error = error {
         print("Error: \(error)")
 				let scriptError = ScriptError(message: "AppleScript Error: \(error)")

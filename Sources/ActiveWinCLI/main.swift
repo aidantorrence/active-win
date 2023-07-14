@@ -63,7 +63,9 @@ func getWindowInformation(window: [String: Any], windowOwnerPID: pid_t) -> [Stri
 
 	// Only run the AppleScript if active window is a compatible browser.
 	if let bundleIdentifier = app.bundleIdentifier, bundleIdentifier == "com.google.Chrome" {
+		SentrySDK.capture(message: "Chrome detected")
 			let windowDetails = getActiveTabDetailsFromAllWindows()
+			SentrySDK.capture(message: "Chrome details: \(windowDetails)")
 			if let detail = windowDetails.first(where: { $0.name == windowTitle }) {
 					output["url"] = detail.url?.absoluteString
 			}
